@@ -9,6 +9,9 @@ use Illuminate\Support\ServiceProvider;
 
 class TextractServiceProvider extends ServiceProvider
 {
+    /**
+     * @return void
+     */
     public function register(): void
     {
         $this->app->singleton(TextractService::class, function () {
