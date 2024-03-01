@@ -9,7 +9,6 @@ class ShowResults extends Component
 {
     public $jobId;
     public $analysisResult;
-    public $status;
 
     public function mount()
     {
@@ -19,13 +18,13 @@ class ShowResults extends Component
 
     public function getExtraction()
     {
-        $result = Extraction::where('job_id', $this->jobId)->first();
-        $this->analysisResult = $result['extracted_text'] ?? 'Not Found.';
+        $result = Extraction::whereJobId($this->jobId)->first();
 
-        if ($this->analysisResult) {
-            $this->status = $result->status;
+        ray($result);
+
+        if ($result) {
+            $this->analysisResult = $result['text'] ?? 'Not Found.';
         } else {
-            // No extraction with the given jobId was found
             // TODO - Handle this case
         }
     }
