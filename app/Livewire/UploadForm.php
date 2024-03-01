@@ -60,7 +60,7 @@ class UploadForm extends Component
      */
     private function sendToInternalApi($base64File)
     {
-        return Http::timeout(400)->post(env('APP_URL') . '/api/upload', [
+        return Http::timeout(400)->post(config('app.url') . '/api/upload', [
             'pdf_base64' => $base64File,
         ]);
     }
