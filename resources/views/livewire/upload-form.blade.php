@@ -22,6 +22,8 @@
                 @if ($file)
                     <button type="submit" class="mt-4 btn text-white bg-emerald-600 rounded px-4 py-2">Upload File</button>
                 @endif
+
+                <p class="mt-4">Download a PDF to test with <a href="/test.pdf" target="_blank" class="text-blue-500">here</a>.</p>
             </div>
         </form>
 
