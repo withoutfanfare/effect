@@ -49,6 +49,8 @@ class ProcessDocumentAnalysisJob implements ShouldQueue
         while ($attempt < $maxAttempts) {
             $result = $textractService->getDocumentAnalysis($this->jobId);
 
+            ray($result);
+
             if ($result['JobStatus'] === 'SUCCEEDED' || $result['JobStatus'] === 'FAILED') {
                 $status = strtolower($result['JobStatus']);
 

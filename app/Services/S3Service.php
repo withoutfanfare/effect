@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use Aws\S3\S3Client;
@@ -8,15 +7,12 @@ use App\Contracts\S3ServiceInterface;
 
 class S3Service implements S3ServiceInterface
 {
-    public function uploadBase64EncodedDocument(string $base64EncodedDocument): string
+    private $s3Client;
+
+    public function __construct()
     {
-        // TODO - handle exceptions
-
-        $documentName = (string) Str::uuid() . '.pdf';
-        $bucket = config('services.aws.bucket');
-
         // Initialize the S3 client
-        $s3 = new S3Client([
+        $this->s3Client = new S3Client([
             'version'     => 'latest',
             'region'      => config('services.aws.region'),
             'credentials' => [
@@ -24,17 +20,34 @@ class S3Service implements S3ServiceInterface
                 'secret' => config('services.aws.secret'),
             ],
         ]);
+    }
 
-        // Upload the decoded file to S3
-        $s3->putObject([
-            'Bucket' => $bucket,
-            'Key'    => $documentName,
-            'Body'   => $base64EncodedDocument,
-            'ContentType' => 'application/pdf',
-        ])->toArray();
+    /**
+     * @param  string  $base64EncodedDocument
+     *
+     * @return string
+     */
+    public function uploadBase64EncodedDocument(string $base64EncodedDocument): string
+    {
+        try {
+            $documentName = (string) Str::uuid() . '.pdf';
+            $bucket = config('services.aws.bucket');
 
-        ray($documentName)->orange();
+            // Upload the decoded file to S3
+            $this->s3Client->putObject([
+                'Bucket' => $bucket,
+                'Key'    => $documentName,
+                'Body'   => $base64EncodedDocument,
+                'ContentType' => 'application/pdf', // Update this according to file type
+            ])->toArray();
 
-        return $documentName;
+            return $documentName;
+        } catch (\Aws\S3\Exception\S3Exception $e) {
+            // Handle the S3Exception
+            echo "There was an error uploading the file.";
+        } catch (\Exception $e) {
+            // Handle general exceptions
+            echo "There was a general error.";
+        }
     }
 }
