@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Log;
 
 class FileUploadController extends Controller
 {
-    protected $textractService;
-    protected $s3Service;
+    protected TextractServiceInterface $textractService;
+    protected S3ServiceInterface $s3Service;
 
     public function __construct(TextractServiceInterface $textractService, S3ServiceInterface $s3Service)
     {
@@ -20,6 +20,11 @@ class FileUploadController extends Controller
         $this->s3Service = $s3Service;
     }
 
+    /**
+     * @param  UploadPdfRequest  $request
+     *
+     * @return JsonResponse
+     */
     public function upload(UploadPdfRequest $request): JsonResponse
     {
         try {
@@ -30,29 +35,28 @@ class FileUploadController extends Controller
 
             $jobId = $this->textractService->startAnalyzeDocument($uploadedDocument);
 
-            ray($jobId)->blue();
-
             if (empty($jobId)) {
                 return response()->json(['message' => 'Failed to start document analysis'], 500);
             }
 
-            // Dispatch job for asynchronous processing
             ProcessDocumentAnalysisJob::dispatch($jobId);
 
             return response()->json(['message' => 'Document analysis pending.'], 202);
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
+            Log::error("Error occurred in file: {$e->getFile()} on line {$e->getLine()} with message: {$e->getMessage()}");
             return response()->json(['message' => 'Failed to upload file.'], 500);
         }
     }
 
+    /**
+     * @param  UploadPdfRequest  $request
+     *
+     * @return string
+     */
     protected function decodeAndUpload(UploadPdfRequest $request)
     {
-        ray('decodeAndUpload');
         $pdfDecoded = base64_decode($request->input('pdf_base64'));
-        ray($pdfDecoded)->blue();
         $uploadResponse = $this->s3Service->uploadBase64EncodedDocument($pdfDecoded);
-        ray($uploadResponse)->orange();
 
         if (isset($uploadResponse['ObjectURL'])) {
             $urlComponents = parse_url($uploadResponse['ObjectURL']);

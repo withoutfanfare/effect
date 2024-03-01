@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Http\Request;
 use Livewire\Component;
 use App\Models\Extraction;
 
@@ -10,23 +11,27 @@ class ShowResults extends Component
     public $jobId;
     public $analysisResult;
 
-    public function mount()
+    const JOB_ID_KEY = 'jobId';
+    const NOT_FOUND_TEXT = 'Not Found.';
+
+    /**
+     * @param  Request  $request
+     *
+     * @return void
+     */
+    public function mount(Request $request): void
     {
-        $this->jobId = request('jobId');
-        $this->getExtraction();
+        $this->jobId = request(self::JOB_ID_KEY);
+        $this->analysisResult = $this->getExtraction();
     }
 
-    public function getExtraction()
+    /**
+     * @return mixed|string
+     */
+    public function getExtraction(): mixed
     {
         $result = Extraction::whereJobId($this->jobId)->first();
-
-        ray($result);
-
-        if ($result) {
-            $this->analysisResult = $result['text'] ?? 'Not Found.';
-        } else {
-            // TODO - Handle this case
-        }
+        return $result && $result['text'] ? $result['text'] : self::NOT_FOUND_TEXT;
     }
 
     public function render()

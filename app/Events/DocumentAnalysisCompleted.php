@@ -12,22 +12,25 @@ class DocumentAnalysisCompleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $jobId;
-    // public $analysisResult;
-    // public $status;
+    public string $jobId;
 
-    public function __construct($jobId)
+    public function __construct(string $jobId)
     {
-        ray('DocumentAnalysisCompleted', $jobId)->green();
         $this->jobId = $jobId;
     }
 
-    public function broadcastOn()
+    /**
+     * @return Channel
+     */
+    public function broadcastOn(): Channel
     {
         return new Channel('document-analysis');
     }
 
-    public function broadcastAs()
+    /**
+     * @return string
+     */
+    public function broadcastAs(): string
     {
         return 'document.analysis.completed';
     }

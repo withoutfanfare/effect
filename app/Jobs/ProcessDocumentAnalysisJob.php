@@ -18,7 +18,7 @@ class ProcessDocumentAnalysisJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $jobId;
+    protected string $jobId;
 
     /**
      * Create a new job instance.
@@ -28,7 +28,6 @@ class ProcessDocumentAnalysisJob implements ShouldQueue
      */
     public function __construct(string $jobId)
     {
-        ray('ProcessDocumentAnalysisJob - construct ' . $jobId);
         $this->jobId = $jobId;
     }
 
@@ -39,10 +38,8 @@ class ProcessDocumentAnalysisJob implements ShouldQueue
      * @return void
      * @throws BindingResolutionException
      */
-    public function handle(Container $app)
+    public function handle(Container $app): void
     {
-        ray('ProcessDocumentAnalysisJob - handle');
-
         $textractService = $app->make(DocumentAnalysisServiceInterface::class);
 
         $maxAttempts = 100;
@@ -52,23 +49,18 @@ class ProcessDocumentAnalysisJob implements ShouldQueue
         while ($attempt < $maxAttempts) {
             $result = $textractService->getDocumentAnalysis($this->jobId);
 
-            ray($result);
-
             if ($result['JobStatus'] === 'SUCCEEDED' || $result['JobStatus'] === 'FAILED') {
                 $status = strtolower($result['JobStatus']);
 
                 $parsedBlocks = $textractService->parseBlocks($result['Blocks']);
 
-                ray($result['Blocks']);
-
                 // Save the blocks to the Extraction model.
-                $saved = Extraction::saveBlocks($this->jobId, $parsedBlocks);
+                $saved = Extraction::saveBlocks($this->jobId, $parsedBlocks, $status);
                 if ($saved) {
                     event(new DocumentAnalysisCompleted($this->jobId));
                     break;
                 }
 
-                // Todo - Handle error case
                 break;
             }
 
@@ -78,7 +70,7 @@ class ProcessDocumentAnalysisJob implements ShouldQueue
 
         if ($attempt >= $maxAttempts) {
             Log::warning("Maximum attempts reached for job {$this->jobId} without completion.");
-            // Need to add additional handling for this case.
+            // TODO - Need to add additional handling for this case.
         }
     }
 }

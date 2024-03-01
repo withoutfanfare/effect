@@ -23,19 +23,23 @@ class Extraction extends Model
         'status' => 'string',
     ];
 
-    public static function saveBlocks($jobId, string $blocks)
+    /**
+     * @param  string  $jobId
+     * @param  string  $parsedBlocks
+     * @param  string  $status
+     *
+     * @return bool
+     */
+    public static function saveBlocks(string $jobId, string $parsedBlocks, string $status): bool
     {
         $extraction = new self();
 
-        ray('saveBlocks', $jobId, $blocks);
-
         $extraction->job_id = $jobId;
-        $extraction->text = $blocks;
-        $extraction->status = 'success';
+        $extraction->text = $parsedBlocks;
+        $extraction->status = $status;
 
-        if(empty($blocks)) {
+        if(empty($parsedBlocks) || $status !== 'succeeded') {
             $extraction->text = 'Something went wrong. Please try again.';
-            $extraction->status = 'failed';
         }
 
         return $extraction->save();

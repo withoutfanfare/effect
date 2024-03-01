@@ -3,10 +3,13 @@
 namespace App\Livewire;
 
 use Exception;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-
 
 class UploadForm extends Component
 {
@@ -16,23 +19,23 @@ class UploadForm extends Component
     public $message;
     public $uploadSuccess = false;
     public $uploadError = false;
-    // protected $listeners = ['documentAnalysisCompleted'];
     protected $listeners = ['document-analysis-completed' => 'handleDocumentAnalysisCompleted'];
 
+    /**
+     * @return void
+     */
     public function submit()
     {
         $this->validate([
-            'file' => 'required|mimes:pdf|max:4096',
+            'file' => 'required|mimes:pdf|max:8192',
         ]);
 
         try {
-            // Fulfil the Base 64 part of the brief by manually encoding the file.
+            // Fulfil the Base 64 input part of the brief by manually encoding the file from the UI.
             if ($this->file) {
                 $base64File = base64_encode(file_get_contents($this->file->getRealPath()));
 
                 $response = $this->sendToInternalApi($base64File);
-
-                ray($response->json());
 
                 // Handle these separately in the UI so we can colourise the messages.
                 if ($response->successful()) {
@@ -42,13 +45,19 @@ class UploadForm extends Component
                 }
             }
         } catch(Exception $e) {
-            ray($e->getMessage());
+            Log::info($e->getMessage());
             $this->uploadError = true;
             $this->message = 'Failed to upload file.';
         }
     }
 
     // Fulfil the REST API request for the brief with the base64 file.
+
+    /**
+     * @param $base64File
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
+     */
     private function sendToInternalApi($base64File)
     {
         return Http::timeout(400)->post(env('APP_URL') . '/api/upload', [
@@ -56,20 +65,17 @@ class UploadForm extends Component
         ]);
     }
 
+    /**
+     * @param $event
+     *
+     * @return void
+     */
     public function handleDocumentAnalysisCompleted($event)
     {
-        ray('handleDocumentAnalysisCompleted');
-        ray($event);
-
-        // Access your event data here
-        $jobId = $event['detail']['jobId'];
-        $analysisResult = $event['detail']['analysisResult'];
         $status = $event['detail']['status'];
-
         if ($status === 'succeeded') {
             $this->uploadSuccess = true;
             $this->message = 'Document analysis completed successfully.';
-            // Process $analysisResult as needed
         } else {
             $this->uploadError = true;
             $this->message = 'Document analysis failed.';
