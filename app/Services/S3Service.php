@@ -46,10 +46,10 @@ class S3Service implements S3ServiceInterface
 
             return $documentName;
         } catch (\Aws\S3\Exception\S3Exception $e) {
-            // Handle the S3Exception
+            // TODO - Handle the S3Exception
             logger()->error(self::S3_EXCEPTION_MESSAGE, ['exception' => $e]);
         } catch (\Exception $e) {
-            // Handle general exceptions
+            // TODO - Handle general exceptions
             logger()->error(self::GENERAL_EXCEPTION_MESSAGE, ['exception' => $e]);
         }
 

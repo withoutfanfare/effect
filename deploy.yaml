@@ -1,0 +1,31 @@
+import:
+  - recipe/laravel.php
+
+config:
+  repository: "git@github.com:withoutfanfare/effect.git"
+  remote_user: root
+  php_fpm_version: '8.2'
+
+hosts:
+  live:
+    hostname: effect.stuntrocket.co
+    deploy_path: "/var/www/vhosts/effect.stuntrocket.co/master"
+    remote_user: "root"
+
+tasks:
+  npm:install:
+    - cd: "{{deploy_path}}/current"
+    - run: "npm install"
+  npm:build:
+    - cd: "{{deploy_path}}/current"
+    - run: "npm run build"
+  site:url:
+    - run: 'curl -s -o /dev/null -w "%{http_code}" https://effect.stuntrocket.co'
+
+after:
+  deploy:failed: deploy:unlock
+  deploy:symlink: npm:install
+  npm:install: npm:build
+  deploy:unlock: site:url
+
+
