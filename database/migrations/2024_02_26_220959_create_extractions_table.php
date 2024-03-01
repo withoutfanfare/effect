@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->id();
             $table->string('job_id')->comment('The AWS job id returned from the Textract API.');
             $table->longText('text')->nullable();
-            $table->string('status')->default(ExtractionStatus::Pending);
+            $table->string('status')->default(ExtractionStatus::PENDING);
             $table->timestamps();
         });
     }

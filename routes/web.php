@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ResultsController;
+use App\Livewire\ShowResults;
+use App\Livewire\UploadForm;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +16,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', UploadForm::class);
+Route::get('/results/{jobId}', ShowResults::class);
