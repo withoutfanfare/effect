@@ -3,14 +3,14 @@ import:
 
 config:
   repository: "git@github.com:withoutfanfare/effect.git"
-  remote_user: root
+  remote_user: ubuntu
   php_fpm_version: '8.2'
 
 hosts:
   live:
     hostname: effect.stuntrocket.co
     deploy_path: "/var/www/vhosts/effect.stuntrocket.co/master"
-    remote_user: "root"
+    remote_user: "ubuntu"
 
 tasks:
   npm:install:
