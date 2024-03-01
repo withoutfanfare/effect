@@ -169,6 +169,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\TextractServiceProvider::class,
+        App\Providers\S3ServiceProvider::class,
     ])->toArray(),
 
     /*
