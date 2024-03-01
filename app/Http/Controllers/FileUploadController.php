@@ -29,8 +29,9 @@ class FileUploadController extends Controller
     {
         try {
             $uploadedDocument = $this->decodeAndUpload($request);
+
             if (!$uploadedDocument) {
-                return response()->json(['message' => 'Failed to upload document to S3'], 500);
+                return response()->json(['message' => 'Failed to extract text from PDF.'], 500);
             }
 
             $jobId = $this->textractService->startAnalyzeDocument($uploadedDocument);
